@@ -77,11 +77,12 @@ const AnimatedUsageCard = ({
 
 const styles = StyleSheet.create({
   usageCard: {
-    width: "48%",
+    width: "47%",
     backgroundColor: "#222",
-    borderRadius: 12,
+    borderRadius: 30, // More rounded corners
     padding: 16,
     alignItems: "center",
+    marginBottom: 8,
   },
   usageTitle: {
     color: "#fff",

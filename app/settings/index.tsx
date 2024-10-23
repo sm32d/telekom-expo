@@ -18,7 +18,12 @@ const SettingsPage = () => {
     description: string;
     onPress: () => void;
   }
-  const SettingsItem = ({ icon, title, description, onPress }: SettingsItemProps) => {
+  const SettingsItem = ({
+    icon,
+    title,
+    description,
+    onPress,
+  }: SettingsItemProps) => {
     return (
       <TouchableOpacity style={styles.settingsItem} onPress={onPress}>
         <Ionicons name={icon} size={24} color="#FFFFFF" />
@@ -85,7 +90,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#121212",
     padding: 16,
-    paddingTop: 60,
   },
   backButton: {
     marginBottom: 20,

@@ -53,7 +53,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#121212",
     padding: 16,
-    paddingTop: 60,
   },
   backButton: {
     marginBottom: 20,

@@ -9,6 +9,7 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
 } from "react-native";
 
 export default function Home() {
@@ -70,73 +71,99 @@ export default function Home() {
           </View>
         </View>
         <View style={styles.headerIcons}>
-          <TouchableOpacity onPress={() => router.push("/notifications")}>
-            <Ionicons name="notifications-outline" size={24} color="#fff" />
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => router.push("/notifications")}
+          >
+            <Ionicons name="notifications-outline" size={18} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push("/settings")}>
-            <Ionicons name="settings-outline" size={24} color="#fff" />
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => router.push("/settings")}
+          >
+            <Ionicons name="settings-outline" size={18} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Balance Section */}
-      <View style={styles.balanceContainer}>
-        <View>
-          <Text style={styles.balanceLabel}>Bill</Text>
-          <Text style={styles.balanceAmount}>${usageData.bill.amount}</Text>
-          <Text style={styles.balanceTime}>Due on {usageData.bill.due}</Text>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Balance Section */}
+        <View style={styles.balanceContainer}>
+          <View>
+            <Text style={styles.balanceLabel}>Bill</Text>
+            <Text style={styles.balanceAmount}>${usageData.bill.amount}</Text>
+            <Text style={styles.balanceTime}>Due on {usageData.bill.due}</Text>
+          </View>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.topUpButton}
+              onPress={() =>
+                router.push({
+                  pathname: "/paybill",
+                  params: { amountDue: usageData.bill.amount },
+                })
+              }
+            >
+              <Text style={styles.topUpText}>Pay</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.autoReloadButton}
+              onPress={() => router.push("/auto-reload")}
+            >
+              <Text style={styles.autoReloadText}>Set Autopay</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={styles.topUpButton}
-            onPress={() =>
-              router.push({
-                pathname: "/paybill",
-                params: { amountDue: usageData.bill.amount },
-              })
-            }
-          >
-            <Text style={styles.topUpText}>Pay</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.autoReloadButton}
-            onPress={() => router.push("/auto-reload")}
-          >
-            <Text style={styles.autoReloadText}>Set Autopay</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
 
-      {renderUsageGrid()}
+        {renderUsageGrid()}
 
-      {/* Previous bottom navigation code remains the same */}
+        {/* Add bottom padding to account for navigation bar */}
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
+
+      {/* bottom navigation */}
       <View style={styles.bottomNav}>
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => router.push("/")}
         >
-          <Ionicons name="home" size={24} color="#ff6b6b" />
+          <View style={[styles.iconButton, { backgroundColor: "#ff6b6b" }]}>
+            <Ionicons name="home" size={18} color="#fff" />
+          </View>
           <Text style={[styles.navText, { color: "#ff6b6b" }]}>Summary</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => router.push("/payments")}
         >
-          <Ionicons name="card" size={24} color="#999" />
+          <View style={styles.iconButton}>
+            <Ionicons name="card" size={18} color="#999" />
+          </View>
           <Text style={styles.navText}>Payments</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => router.push("/services")}
         >
-          <Ionicons name="apps" size={24} color="#999" />
+          <View style={styles.iconButton}>
+            <Ionicons name="apps" size={18} color="#999" />
+          </View>
           <Text style={styles.navText}>Services</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => router.push("/support")}
         >
-          <Ionicons name="headset" size={24} color="#999" />
+          <View style={styles.iconButton}>
+            <Ionicons name="headset" size={18} color="#999" />
+          </View>
           <Text style={styles.navText}>Support</Text>
         </TouchableOpacity>
       </View>
@@ -154,7 +181,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
-    paddingTop: 60,
+    paddingBottom: 12,
+    paddingHorizontal: 24,
   },
   userInfo: {
     flexDirection: "row",
@@ -182,9 +210,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 16,
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    paddingHorizontal: 8,
+  },
+  bottomSpacing: {
+    height: 100,
+  },
   balanceContainer: {
-    padding: 16,
-    marginBottom: 16,
+    padding: 20, // Increased padding
+    marginBottom: 20, // Increased bottom margin
+    backgroundColor: "#222",
+    borderRadius: 20,
+    marginHorizontal: 8,
+    marginTop: 12,
   },
   balanceLabel: {
     color: "#999",
@@ -209,14 +250,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#ff6b6b",
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 25, // More rounded corners
     flex: 1,
   },
   autoReloadButton: {
     backgroundColor: "#333",
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 25, // More rounded corners
     flex: 1,
   },
   topUpText: {
@@ -233,14 +274,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     padding: 8,
-    gap: 8,
+    gap: 16,
+    marginTop: 0,
+    justifyContent: "space-between",
   },
   usageCard: {
-    width: "48%",
+    width: "47%", // Adjust width considering the new gap
     backgroundColor: "#222",
-    borderRadius: 12,
-    padding: 16,
-    alignItems: "center",
+    borderRadius: 20,
+    padding: 20, // Increased padding
   },
   usageTitle: {
     color: "#fff",
@@ -265,10 +307,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   moreOptionsCard: {
-    width: "48%",
+    width: "47%",
     backgroundColor: "#222",
-    borderRadius: 12,
+    borderRadius: 30, // More rounded corners
     padding: 16,
+    alignItems: "center",
+    marginBottom: 8,
     justifyContent: "space-between",
   },
   moreOptionsTitle: {
@@ -280,7 +324,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#333",
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 25,
     marginHorizontal: 10,
     alignItems: "center",
   },
@@ -288,17 +332,24 @@ const styles = StyleSheet.create({
     color: "#ff6b6b",
     fontSize: 14,
   },
+  iconButton: {
+    backgroundColor: "#333",
+    width: 30,
+    height: 30,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   bottomNav: {
     flexDirection: "row",
     justifyContent: "space-around",
     padding: 16,
     backgroundColor: "#222",
     position: "absolute",
-    bottom: 16,
+    bottom: 8,
     left: 16,
     right: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    borderRadius: 30,
   },
   navItem: {
     alignItems: "center",
