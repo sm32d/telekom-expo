@@ -4,7 +4,7 @@ This is a mobile app for a mobile operator showing usage and bills.
 
 <div align="center">
     <img src="./assets/screenshots/IMG_7378.PNG" alt="app home preview" width="40%">
-    <img src="./assets/screenshots/IMG_7378.PNG" alt="bill pay preview" width="40%">
+    <img src="./assets/screenshots/IMG_7379.PNG" alt="bill pay preview" width="40%">
 </div>
 <div align="center">
     <img src="./assets/screenshots/IMG_7380.PNG" alt="app home preview" width="40%">
