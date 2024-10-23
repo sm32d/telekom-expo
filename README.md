@@ -2,10 +2,18 @@
 
 This is a mobile app for a mobile operator showing usage and bills.
 
-<img src="preview.jpg" alt="app home preview" width="295" height="640">
-<img src="billpay.jpg" alt="bill pay preview" width="295" height="640">
-<img src="settings.jpg" alt="settings page preview" width="295" height="640">
-<img src="notif.jpg" alt="notifications page preview" width="295" height="640">
+<div align="center">
+    <img src="./assets/screenshots/IMG_7378.PNG" alt="app home preview" width="40%">
+    <img src="./assets/screenshots/IMG_7378.PNG" alt="bill pay preview" width="40%">
+</div>
+<div align="center">
+    <img src="./assets/screenshots/IMG_7380.PNG" alt="app home preview" width="40%">
+    <img src="./assets/screenshots/IMG_7381.PNG" alt="bill pay preview" width="40%">
+</div>
+<div align="center">
+    <img src="./assets/screenshots/IMG_7382.PNG" alt="app home preview" width="40%">
+    <img src="./assets/screenshots/IMG_7383.PNG" alt="bill pay preview" width="40%">
+</div>
 
 Inspired from [this design](https://dribbble.com/shots/24196570-Telecom-Mobile-App).
 
