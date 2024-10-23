@@ -19,7 +19,7 @@ export default function TabsLayout() {
           paddingTop: 16,
           paddingBottom: 16,
         },
-        tabBarIcon: ({ focused, color, size }) => null, // We'll handle icons in tabBarLabel
+        tabBarIcon: ({ focused, color, size }) => null, // handle icons in tabBarLabel
         tabBarLabel: ({ focused, color, children }) => {
           const getIconName = () => {
             switch (children) {

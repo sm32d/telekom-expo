@@ -177,8 +177,8 @@ const styles = StyleSheet.create({
     height: 100,
   },
   balanceContainer: {
-    padding: 20, // Increased padding
-    marginBottom: 20, // Increased bottom margin
+    padding: 20,
+    marginBottom: 20,
     backgroundColor: "#222",
     borderRadius: 20,
     marginHorizontal: 8,
@@ -207,14 +207,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#ff443c",
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 25, // More rounded corners
+    borderRadius: 25,
     flex: 1,
   },
   autoReloadButton: {
     backgroundColor: "#333",
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 25, // More rounded corners
+    borderRadius: 25,
     flex: 1,
   },
   topUpText: {
@@ -236,10 +236,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   usageCard: {
-    width: "47%", // Adjust width considering the new gap
+    width: "47%",
     backgroundColor: "#222",
     borderRadius: 20,
-    padding: 20, // Increased padding
+    padding: 20,
   },
   usageTitle: {
     color: "#fff",
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   moreOptionsCard: {
     width: "47%",
     backgroundColor: "#222",
-    borderRadius: 30, // More rounded corners
+    borderRadius: 30,
     padding: 16,
     alignItems: "center",
     marginBottom: 8,

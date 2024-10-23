@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   usageCard: {
     width: "47%",
     backgroundColor: "#222",
-    borderRadius: 30, // More rounded corners
+    borderRadius: 30,
     padding: 16,
     alignItems: "center",
     marginBottom: 8,

@@ -21,14 +21,12 @@ interface ServiceCardProps {
 
 type TabType = "Most Popular" | "Entertainment" | "Financial Services";
 
-// Define the type for our services data
 interface ServiceData {
   title: string;
   description: string;
   icon: string;
 }
 
-// Create a type for our services by tab
 type ServicesByTabType = {
   [key in TabType]: ServiceData[];
 };
