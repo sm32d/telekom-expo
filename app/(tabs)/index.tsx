@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { useRouter } from "expo-router";
-import useUsageStore from "./store/usageStore";
-import AnimatedUsageCard from "./components/AnimatedUsageCard";
+import useUsageStore from "../store/usageStore";
+import AnimatedUsageCard from "../components/AnimatedUsageCard";
 import {
   ActivityIndicator,
   View,
@@ -23,7 +23,7 @@ export default function Home() {
     if (loading) {
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#ff6b6b" />
+          <ActivityIndicator size="large" color="#ff443c" />
         </View>
       );
     }
@@ -124,49 +124,6 @@ export default function Home() {
         {/* Add bottom padding to account for navigation bar */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
-
-      {/* bottom navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => router.push("/")}
-        >
-          <View style={[styles.iconButton, { backgroundColor: "#ff6b6b" }]}>
-            <Ionicons name="home" size={18} color="#fff" />
-          </View>
-          <Text style={[styles.navText, { color: "#ff6b6b" }]}>Summary</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => router.push("/payments")}
-        >
-          <View style={styles.iconButton}>
-            <Ionicons name="card" size={18} color="#999" />
-          </View>
-          <Text style={styles.navText}>Payments</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => router.push("/services")}
-        >
-          <View style={styles.iconButton}>
-            <Ionicons name="apps" size={18} color="#999" />
-          </View>
-          <Text style={styles.navText}>Services</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => router.push("/support")}
-        >
-          <View style={styles.iconButton}>
-            <Ionicons name="headset" size={18} color="#999" />
-          </View>
-          <Text style={styles.navText}>Support</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -247,7 +204,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   topUpButton: {
-    backgroundColor: "#ff6b6b",
+    backgroundColor: "#ff443c",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 25, // More rounded corners
@@ -295,7 +252,7 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     borderWidth: 3,
-    borderColor: "#ff6b6b",
+    borderColor: "#ff443c",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -329,7 +286,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   manageText: {
-    color: "#ff6b6b",
+    color: "#ff443c",
     fontSize: 14,
   },
   iconButton: {
@@ -339,25 +296,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-  },
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    padding: 16,
-    backgroundColor: "#222",
-    position: "absolute",
-    bottom: 8,
-    left: 16,
-    right: 16,
-    borderRadius: 30,
-  },
-  navItem: {
-    alignItems: "center",
-  },
-  navText: {
-    color: "#999",
-    fontSize: 12,
-    marginTop: 4,
   },
   loadingContainer: {
     flex: 1,
@@ -371,12 +309,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: "#ff6b6b",
+    color: "#ff443c",
     fontSize: 16,
     marginBottom: 12,
   },
   retryButton: {
-    backgroundColor: "#ff6b6b",
+    backgroundColor: "#ff443c",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,

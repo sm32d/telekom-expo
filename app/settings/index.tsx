@@ -36,52 +36,54 @@ const SettingsPage = () => {
     );
   };
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
       </TouchableOpacity>
       <Text style={styles.title}>Settings</Text>
-      <SettingsItem
-        icon="person-outline"
-        title="Account"
-        description="Manage your account details"
-        onPress={() => {
-          /* Navigate to account page */
-        }}
-      />
-      <SettingsItem
-        icon="card-outline"
-        title="Billing"
-        description="View and manage your billing information"
-        onPress={() => {
-          /* Navigate to billing page */
-        }}
-      />
-      <SettingsItem
-        icon="notifications-outline"
-        title="Notifications"
-        description="Customize your notification preferences"
-        onPress={() => {
-          /* Navigate to notifications page */
-        }}
-      />
-      <SettingsItem
-        icon="lock-closed-outline"
-        title="Privacy & Security"
-        description="Manage your privacy and security settings"
-        onPress={() => {
-          /* Navigate to privacy page */
-        }}
-      />
-      <SettingsItem
-        icon="help-circle-outline"
-        title="Help & Support"
-        description="Get assistance and view FAQs"
-        onPress={() => {
-          /* Navigate to help page */
-        }}
-      />
-    </ScrollView>
+      <ScrollView>
+        <SettingsItem
+          icon="person-outline"
+          title="Account"
+          description="Manage your account details"
+          onPress={() => {
+            /* Navigate to account page */
+          }}
+        />
+        <SettingsItem
+          icon="card-outline"
+          title="Billing"
+          description="View and manage your billing information"
+          onPress={() => {
+            /* Navigate to billing page */
+          }}
+        />
+        <SettingsItem
+          icon="notifications-outline"
+          title="Notifications"
+          description="Customize your notification preferences"
+          onPress={() => {
+            /* Navigate to notifications page */
+          }}
+        />
+        <SettingsItem
+          icon="lock-closed-outline"
+          title="Privacy & Security"
+          description="Manage your privacy and security settings"
+          onPress={() => {
+            /* Navigate to privacy page */
+          }}
+        />
+        <SettingsItem
+          icon="help-circle-outline"
+          title="Help & Support"
+          description="Get assistance and view FAQs"
+          onPress={() => {
+            /* Navigate to help page */
+          }}
+        />
+      </ScrollView>
+    </View>
   );
 };
 
