@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -12,46 +13,62 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 const BillPaymentPage = () => {
   const router = useRouter();
   const { amountDue } = useLocalSearchParams();
-
   const [amount, setAmount] = useState("");
 
   const handlePayment = () => {
-    // Implement payment logic here
     console.log("Payment of $" + amount + " processed");
-    // You might want to update the balance in your Zustand store here
     router.back();
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-      </TouchableOpacity>
-      <Text style={styles.title}>Bill Payment</Text>
-      <View style={styles.balanceContainer}>
-        <Text style={styles.balanceLabel}>Current Balance</Text>
-        <Text style={styles.balanceAmount}>${amountDue}</Text>
-      </View>
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Amount to Pay</Text>
-        <TextInput
-          style={styles.input}
-          value={amount}
-          onChangeText={setAmount}
-          keyboardType="numeric"
-          placeholder="Enter amount"
-          placeholderTextColor="#999999"
-        />
+      <View style={styles.header}>
         <TouchableOpacity
-          style={styles.fillButton}
-          onPress={() => setAmount(amountDue.toString())}
+          style={styles.backButton}
+          onPress={() => router.back()}
         >
-          <Text style={styles.fillButtonText}>Pay All</Text>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
+        <Text style={styles.headerTitle}>Bill Payment</Text>
       </View>
-      <TouchableOpacity style={styles.payButton} onPress={handlePayment}>
-        <Text style={styles.payButtonText}>Pay Now</Text>
-      </TouchableOpacity>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.card}>
+          <View style={styles.balanceContainer}>
+            <Text style={styles.balanceLabel}>Bill Amount</Text>
+            <Text style={styles.balanceAmount}>${amountDue}</Text>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.inputLabel}>Amount to Pay</Text>
+          <TextInput
+            style={styles.input}
+            value={amount}
+            onChangeText={setAmount}
+            keyboardType="numeric"
+            placeholder="Enter amount"
+            placeholderTextColor="#666"
+          />
+          <TouchableOpacity
+            style={styles.fillButton}
+            onPress={() => setAmount(amountDue.toString())}
+          >
+            <Text style={styles.fillButtonText}>Pay Full Amount</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.payButton} onPress={handlePayment}>
+          <Text style={styles.payButtonText}>Pay Now</Text>
+          <Ionicons name="arrow-forward" size={24} color="#fff" />
+        </TouchableOpacity>
+
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
     </View>
   );
 };
@@ -60,67 +77,89 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#121212",
-    padding: 16,
+  },
+  header: {
+    paddingTop: 16,
+    paddingBottom: 32,
+    paddingHorizontal: 24,
+    flexDirection: "row",
+    alignItems: "center",
   },
   backButton: {
-    marginBottom: 20,
+    marginRight: 16,
   },
-  title: {
+  headerTitle: {
+    color: "#fff",
     fontSize: 24,
     fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 30,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    paddingHorizontal: 16,
+  },
+  card: {
+    backgroundColor: "#222",
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
   },
   balanceContainer: {
-    marginBottom: 30,
+    alignItems: "center",
+    padding: 16,
   },
   balanceLabel: {
     fontSize: 16,
-    color: "#AAAAAA",
+    color: "#999",
+    marginBottom: 8,
   },
   balanceAmount: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: "bold",
-    color: "#FFFFFF",
-  },
-  inputContainer: {
-    marginBottom: 30,
+    color: "#fff",
   },
   inputLabel: {
     fontSize: 16,
-    color: "#AAAAAA",
-    marginBottom: 10,
+    color: "#999",
+    marginBottom: 12,
   },
   input: {
-    backgroundColor: "#333333",
-    color: "#FFFFFF",
+    backgroundColor: "#333",
+    color: "#fff",
     fontSize: 18,
-    padding: 15,
-    borderRadius: 10,
+    padding: 16,
+    borderRadius: 15,
+    marginBottom: 12,
   },
   fillButton: {
-    paddingVertical: 5, // Smaller vertical padding
-    paddingHorizontal: 10, // Horizontal padding for a compact look
-    borderRadius: 5, // Slightly rounded corners
-    alignSelf: "flex-start", // Aligns the button to the start
-    marginTop: 10, // Space above the button
-    backgroundColor: "#333333",
+    backgroundColor: "#333",
+    padding: 12,
+    borderRadius: 15,
+    alignItems: "center",
   },
   fillButtonText: {
-    fontSize: 14, // Smaller font size for a compact button
-    fontWeight: "bold",
-    color: "#0099FF",
+    fontSize: 16,
+    color: "#ff443c",
+    fontWeight: "600",
   },
   payButton: {
     backgroundColor: "#ff443c",
-    padding: 15,
-    borderRadius: 10,
+    padding: 16,
+    borderRadius: 20,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
   },
   payButtonText: {
-    color: "#FFFFFF",
+    color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+    marginRight: 8,
+  },
+  bottomSpacing: {
+    height: 100,
   },
 });
 
