@@ -61,7 +61,9 @@ export default function TabsLayout() {
                   fontSize: 12,
                 }}
               >
-                {children === "index" ? "Summary" : children}
+                {children === "index"
+                  ? "Summary"
+                  : children.charAt(0).toUpperCase() + children.slice(1)}
               </Text>
             </View>
           );
@@ -70,7 +72,6 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="payments" />
-      <Tabs.Screen name="services" />
       <Tabs.Screen name="support" />
     </Tabs>
   );

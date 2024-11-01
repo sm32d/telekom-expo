@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated, Easing } from "react-native";
 import Svg, { Circle } from "react-native-svg";
-import { useRef } from "react";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -10,6 +9,7 @@ interface AnimatedUsageCardProps {
   used: number;
   total: number;
   unit: string;
+  percentage: number;
 }
 
 const AnimatedUsageCard = ({
@@ -17,23 +17,29 @@ const AnimatedUsageCard = ({
   used,
   total,
   unit,
+  percentage,
 }: AnimatedUsageCardProps) => {
-  const progressAnimation = useRef(new Animated.Value(0)).current;
-  const percentage = (used / total) * 100;
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const circleCircumference = 2 * Math.PI * 40; // radius is 40
 
   useEffect(() => {
-    Animated.timing(progressAnimation, {
-      toValue: percentage,
+    // Reset animation value before starting new animation
+    animatedValue.setValue(0);
+
+    Animated.timing(animatedValue, {
+      toValue: 1,
       duration: 1500,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start();
   }, [percentage]);
 
-  const circleCircumference = 2 * Math.PI * 40; // radius is 40
-  const strokeDashoffset = progressAnimation.interpolate({
-    inputRange: [0, 100],
-    outputRange: [circleCircumference, 0],
+  const strokeDashoffset = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [
+      circleCircumference,
+      circleCircumference * (1 - percentage / 100),
+    ],
   });
 
   return (
@@ -58,7 +64,7 @@ const AnimatedUsageCard = ({
             stroke="#ff443c"
             strokeWidth={8}
             fill="transparent"
-            strokeDasharray={circleCircumference}
+            strokeDasharray={`${circleCircumference}`}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
             transform="rotate(-90 50 50)"

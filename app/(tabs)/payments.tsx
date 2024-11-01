@@ -1,98 +1,154 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Modal,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import useUsageStore, { Bill } from "../store/usageStore";
+import { useAuthStore } from "../store/authStore";
+import { useServiceData } from "../hooks/useServiceData";
+
+interface PaymentHistory {
+  transactedAt: string;
+  paymentType: string;
+  receipt: string;
+  amount: string;
+  product: string;
+}
+
+interface TimeFilter {
+  label: string;
+  value: number;
+  startDate: () => string;
+  endDate: () => string;
+}
+
+const timeFilters: TimeFilter[] = [
+  {
+    label: "Last Month",
+    value: 1,
+    startDate: () => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - 1);
+      return date.toISOString().split("T")[0];
+    },
+    endDate: () => new Date().toISOString().split("T")[0],
+  },
+  {
+    label: "Last 3 Months",
+    value: 3,
+    startDate: () => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - 3);
+      return date.toISOString().split("T")[0];
+    },
+    endDate: () => new Date().toISOString().split("T")[0],
+  },
+  {
+    label: "Last 6 Months",
+    value: 6,
+    startDate: () => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - 6);
+      return date.toISOString().split("T")[0];
+    },
+    endDate: () => new Date().toISOString().split("T")[0],
+  },
+];
 
 export default function Payments() {
   const router = useRouter();
-  const { usageData } = useUsageStore();
-  const [selectedFilter, setSelectedFilter] = useState<
-    "all" | "paid" | "pending"
-  >("all");
-
-  const filters = [
-    { label: "All", value: "all" },
-    { label: "Paid", value: "paid" },
-    { label: "Pending", value: "pending" },
-  ];
-
-  const filteredBills = usageData.billHistory.filter((bill) =>
-    selectedFilter === "all" ? true : bill.status === selectedFilter,
+  const { bearerToken } = useAuthStore();
+  const { profileData } = useServiceData();
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<TimeFilter>(
+    timeFilters[2],
   );
 
-  const BillCard = ({ bill }: { bill: Bill }) => (
-    <TouchableOpacity
-      style={styles.billCard}
-      onPress={() =>
-        router.push({
-          pathname: "/bill-details",
-          params: { billId: bill.id },
-        })
+  const fetchPaymentHistory = async (filter: TimeFilter) => {
+    try {
+      if (!profileData?.svcId) throw new Error("No svcId found");
+      setLoading(true);
+      const response = await fetch(
+        `https://account.eight.com.sg/api/v1/service/${profileData.svcId}/payment/history?startDate=${filter.startDate()}&endDate=${filter.endDate()}&rows=10&offset=0`,
+        {
+          headers: {
+            Authorization: `Bearer ${bearerToken}`,
+          },
+        },
+      );
+      const data = await response.json();
+      if (data.code === 0) {
+        setPaymentHistory(data.data);
       }
-    >
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (profileData?.svcId) {
+      fetchPaymentHistory(selectedFilter);
+    }
+  }, [selectedFilter, bearerToken, profileData]);
+
+  const PaymentCard = ({ payment }: { payment: PaymentHistory }) => (
+    <View style={styles.billCard}>
       <View style={styles.billHeader}>
         <View style={styles.billPeriod}>
-          <Text style={styles.billPeriodText}>{bill.billPeriod}</Text>
+          <Text style={styles.billPeriodText}>{payment.product}</Text>
           <Text style={styles.billDateText}>
-            Generated on {new Date(bill.date).toLocaleDateString()}
+            {new Date(payment.transactedAt).toLocaleDateString("en-GB")}{" "}
+            {new Date(payment.transactedAt).toLocaleTimeString("en-GB")}
           </Text>
         </View>
-        <View
-          style={[
-            styles.statusBadge,
-            {
-              backgroundColor:
-                bill.status === "paid"
-                  ? "#1a472a"
-                  : bill.status === "pending"
-                    ? "#2a2a2a"
-                    : "#4a1515",
-            },
-          ]}
-        >
-          <Text style={styles.statusText}>{bill.status.toUpperCase()}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: "#ff443c" }]}>
+          <Text style={styles.statusText}>
+            {payment.paymentType.toUpperCase()}
+          </Text>
         </View>
       </View>
 
       <View style={styles.billDetails}>
         <View>
           <Text style={styles.amountLabel}>Amount</Text>
-          <Text style={styles.amountText}>${bill.amount.toFixed(2)}</Text>
-        </View>
-        <View>
-          <Text style={styles.dueDateLabel}>Due Date</Text>
-          <Text style={styles.dueDateText}>
-            {new Date(bill.dueDate).toLocaleDateString()}
+          <Text style={styles.amountText}>
+            ${Number(payment.amount).toFixed(2)}
           </Text>
         </View>
-        {bill.status === "pending" && (
-          <TouchableOpacity
-            style={styles.payButton}
-            onPress={() =>
-              router.push({
-                pathname: "/paybill",
-                params: { amountDue: bill.amount },
-              })
-            }
-          >
-            <Text style={styles.payButtonText}>Pay Now</Text>
-          </TouchableOpacity>
-        )}
+        <View>
+          <Text style={styles.receiptLabel}>Receipt</Text>
+          <Text style={styles.receiptText}>#{payment.receipt}</Text>
+        </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Payments</Text>
+        <Text style={styles.headerTitle}>Historic Payments</Text>
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={() => setShowFilterModal(true)}
+        >
+          <Ionicons name="filter" size={24} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.selectedFilterContainer}>
+        <Text style={styles.selectedFilterText}>
+          Showing payments for: {selectedFilter.label}
+        </Text>
       </View>
 
       <ScrollView
@@ -100,34 +156,58 @@ export default function Payments() {
         contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.filterContainer}>
-          {filters.map((filter) => (
-            <TouchableOpacity
-              key={filter.value}
-              style={[
-                styles.filterButton,
-                selectedFilter === filter.value && styles.activeFilter,
-              ]}
-              onPress={() => setSelectedFilter(filter.value as any)}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  selectedFilter === filter.value && styles.activeFilterText,
-                ]}
-              >
-                {filter.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {filteredBills.map((bill) => (
-          <BillCard key={bill.id} bill={bill} />
-        ))}
-
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#ff443c" />
+          </View>
+        ) : (
+          paymentHistory.map((payment, index) => (
+            <PaymentCard key={payment.receipt + index} payment={payment} />
+          ))
+        )}
         <View style={styles.bottomSpacing} />
       </ScrollView>
+
+      <Modal
+        visible={showFilterModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowFilterModal(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Time Period</Text>
+            {timeFilters.map((filter) => (
+              <TouchableOpacity
+                key={filter.value}
+                style={[
+                  styles.filterOption,
+                  selectedFilter.value === filter.value &&
+                    styles.selectedFilter,
+                ]}
+                onPress={() => {
+                  setSelectedFilter(filter);
+                  setShowFilterModal(false);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.filterOptionText,
+                    selectedFilter.value === filter.value &&
+                      styles.selectedFilterText,
+                  ]}
+                >
+                  {filter.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -138,6 +218,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#121212",
   },
   header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingTop: 16,
     paddingBottom: 32,
     paddingHorizontal: 24,
@@ -147,33 +230,23 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
+  filterButton: {
+    padding: 8,
+  },
+  selectedFilterContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+  },
+  selectedFilterText: {
+    color: "#999",
+    fontSize: 14,
+    fontWeight: "600",
+  },
   scrollView: {
     flex: 1,
   },
   scrollViewContent: {
     paddingHorizontal: 16,
-  },
-  filterContainer: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 24,
-  },
-  filterButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: "#222",
-  },
-  activeFilter: {
-    backgroundColor: "#ff443c",
-  },
-  filterText: {
-    color: "#999",
-    fontSize: 14,
-  },
-  activeFilterText: {
-    color: "#fff",
-    fontWeight: "600",
   },
   billCard: {
     backgroundColor: "#222",
@@ -225,25 +298,52 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-  dueDateLabel: {
+  receiptLabel: {
     color: "#999",
     fontSize: 14,
     marginBottom: 4,
   },
-  dueDateText: {
+  receiptText: {
     color: "#fff",
     fontSize: 16,
   },
-  payButton: {
-    backgroundColor: "#ff443c",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: 200,
   },
-  payButtonText: {
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#222",
+    borderRadius: 20,
+    padding: 24,
+    width: "80%",
+    maxWidth: 400,
+  },
+  modalTitle: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: "600",
+    marginBottom: 16,
+  },
+  filterOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  selectedFilter: {
+    backgroundColor: "#ff443c",
+  },
+  filterOptionText: {
+    color: "#fff",
+    fontSize: 16,
   },
   bottomSpacing: {
     height: 100,

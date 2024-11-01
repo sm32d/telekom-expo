@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import useUsageStore from "../store/usageStore";
+import { useServiceData } from "../hooks/useServiceData";
 import AnimatedUsageCard from "../components/AnimatedUsageCard";
 import {
   ActivityIndicator,
@@ -10,11 +11,28 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Linking,
+  RefreshControl,
 } from "react-native";
 
 export default function Home() {
-  const { usageData, loading, error, fetchUsageData } = useUsageStore();
+  const { profileData, serviceDetails, loading, error, refetch } =
+    useServiceData();
+  const { usageData, fetchUsageData } = useUsageStore();
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetch(), fetchUsageData()]);
+    } catch (error) {
+      console.error("Refresh failed:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch, fetchUsageData]);
+
   useEffect(() => {
     fetchUsageData();
   }, []);
@@ -28,30 +46,98 @@ export default function Home() {
       );
     }
 
-    if (error) {
+    if (error || !serviceDetails) {
       return (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Error loading usage data</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchUsageData}>
+          <TouchableOpacity style={styles.retryButton} onPress={refetch}>
             <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
       );
     }
 
+    // Find domestic inclusions
+    const domesticData = serviceDetails.currentPlan.inclusions.find(
+      (inclusion) =>
+        inclusion.inclusionType === "gprs" &&
+        inclusion.walletType === "domestic" &&
+        inclusion.guiMetadata?.includes("Local Data"),
+    );
+
+    const domesticCalls = serviceDetails.currentPlan.inclusions.find(
+      (inclusion) =>
+        inclusion.inclusionType === "call" &&
+        inclusion.walletType === "domestic" &&
+        inclusion.guiMetadata?.includes("Local Outgoing Mins"),
+    );
+
+    const domesticSMS = serviceDetails.currentPlan.inclusions.find(
+      (inclusion) =>
+        inclusion.inclusionType === "sms" &&
+        inclusion.walletType === "domestic" &&
+        inclusion.guiMetadata?.includes("Local SMS"),
+    );
+
+    // Data calculations (KB to GB)
+    const dataTotal = domesticData
+      ? Number(domesticData.allowance) / (1024 * 1024)
+      : 0;
+    const dataRemaining = domesticData
+      ? Number(domesticData.remaining) / (1024 * 1024)
+      : 0;
+    const dataPercentage =
+      dataTotal > 0 ? (dataRemaining / dataTotal) * 100 : 0;
+
+    // Calls calculations (seconds to minutes)
+    const callsTotal = domesticCalls
+      ? Math.round(Number(domesticCalls.allowance) / 60)
+      : 0;
+    const callsRemaining = domesticCalls
+      ? Math.round(Number(domesticCalls.remaining) / 60)
+      : 0;
+    const callsPercentage =
+      callsTotal > 0 ? (callsRemaining / callsTotal) * 100 : 0;
+
+    // SMS calculations
+    const smsTotal = domesticSMS ? Number(domesticSMS.allowance) : 0;
+    const smsRemaining = domesticSMS ? Number(domesticSMS.remaining) : 0;
+    const smsPercentage = smsTotal > 0 ? (smsRemaining / smsTotal) * 100 : 0;
+
     return (
-      <View style={styles.usageGrid}>
-        <AnimatedUsageCard title="Data" {...usageData.data} />
-        <AnimatedUsageCard title="Calls" {...usageData.calls} />
-        <AnimatedUsageCard title="SMS" {...usageData.sms} />
-        <View style={styles.moreOptionsCard}>
-          <Text style={styles.moreOptionsTitle}>More options</Text>
-          <TouchableOpacity
-            style={styles.manageButton}
-            onPress={() => router.push("/more-options")}
-          >
-            <Text style={styles.manageText}>Manage</Text>
-          </TouchableOpacity>
+      <View>
+        <Text style={styles.usageHeading}>Remaining Allowance</Text>
+        <View style={styles.usageGrid}>
+          <AnimatedUsageCard
+            title="Data"
+            used={parseFloat(dataRemaining.toFixed(2))}
+            total={parseFloat(dataTotal.toFixed(2))}
+            unit="GB"
+            percentage={dataPercentage}
+          />
+          <AnimatedUsageCard
+            title="Calls"
+            used={callsRemaining}
+            total={callsTotal}
+            unit="mins"
+            percentage={callsPercentage}
+          />
+          <AnimatedUsageCard
+            title="SMS"
+            used={smsRemaining}
+            total={smsTotal}
+            unit="SMS"
+            percentage={smsPercentage}
+          />
+          <View style={styles.moreOptionsCard}>
+            <Text style={styles.moreOptionsTitle}>More options</Text>
+            <TouchableOpacity
+              style={styles.manageButton}
+              onPress={() => router.push("/more-options")}
+            >
+              <Text style={styles.manageText}>Manage</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );
@@ -59,24 +145,30 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      {/* Previous header code remains the same */}
+      {/* Header */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={24} color="#fff" />
-          </View>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "/profile",
+              })
+            }
+          >
+            <View style={styles.avatar}>
+              <Ionicons name="person" size={24} color="#fff" />
+            </View>
+          </TouchableOpacity>
           <View>
-            <Text style={styles.userName}>Andrew</Text>
-            <Text style={styles.phoneNumber}>9999-8888</Text>
+            <Text style={styles.userName}>
+              {profileData?.lastName || "Loading..."}
+            </Text>
+            <Text style={styles.phoneNumber}>
+              {profileData?.mobileNumber || "Loading..."}
+            </Text>
           </View>
         </View>
         <View style={styles.headerIcons}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => router.push("/notifications")}
-          >
-            <Ionicons name="notifications-outline" size={18} color="#fff" />
-          </TouchableOpacity>
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => router.push("/settings")}
@@ -90,31 +182,51 @@ export default function Home() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#ff443c" // This will color the spinner
+            colors={["#ff443c"]} // For Android
+            progressBackgroundColor="#222" // For Android
+          />
+        }
       >
         {/* Balance Section */}
         <View style={styles.balanceContainer}>
           <View>
-            <Text style={styles.balanceLabel}>Bill</Text>
-            <Text style={styles.balanceAmount}>${usageData.bill.amount}</Text>
-            <Text style={styles.balanceTime}>Due on {usageData.bill.due}</Text>
+            <Text style={styles.balanceLabel}>Main Balance</Text>
+            <Text style={styles.balanceAmount}>
+              $
+              {serviceDetails
+                ? Number(serviceDetails.mainBalance).toFixed(2)
+                : "0.00"}
+            </Text>
+            <Text style={styles.balanceTime}>
+              Current plan expires on{" "}
+              {serviceDetails
+                ? new Date(serviceDetails.acctExpiry).toLocaleDateString(
+                    "en-GB",
+                  )
+                : "N/A"}
+            </Text>
           </View>
           <View style={styles.actionButtons}>
             <TouchableOpacity
               style={styles.topUpButton}
               onPress={() =>
-                router.push({
-                  pathname: "/paybill",
-                  params: { amountDue: usageData.bill.amount },
-                })
+                Linking.openURL(
+                  "https://account.eight.com.sg/dashboard/recharge",
+                )
               }
             >
-              <Text style={styles.topUpText}>Pay</Text>
+              <Text style={styles.topUpText}>Top-up</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.autoReloadButton}
-              onPress={() => router.push("/auto-reload")}
+              onPress={() => router.push("/(tabs)/payments")}
             >
-              <Text style={styles.autoReloadText}>Set Autopay</Text>
+              <Text style={styles.autoReloadText}>View History</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -226,6 +338,13 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     fontWeight: "600",
+  },
+  usageHeading: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   usageGrid: {
     flexDirection: "row",

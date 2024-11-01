@@ -4,12 +4,87 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Switch,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState, useEffect } from "react";
+import { useAuthStore } from "../store/authStore";
+import { useServiceData } from "../hooks/useServiceData";
+
+interface Settings {
+  receivePromotionalMessages: boolean;
+  disableInternationalCall: boolean;
+  disableInternationalSMS: boolean;
+}
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { bearerToken } = useAuthStore();
+  const { profileData } = useServiceData();
+  const [settings, setSettings] = useState<Settings>({
+    receivePromotionalMessages: true,
+    disableInternationalCall: false,
+    disableInternationalSMS: false,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (profileData?.svcId) {
+      fetchSettings();
+    }
+  }, [profileData]);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch(
+        `https://account.eight.com.sg/api/v1/service/${profileData?.svcId}/settings`,
+        {
+          headers: {
+            Authorization: `Bearer ${bearerToken}`,
+          },
+        },
+      );
+      const data = await response.json();
+      if (data.code === 0) {
+        setSettings({
+          receivePromotionalMessages: data.data.receivePromotionalMessages,
+          disableInternationalCall: data.data.disableInternationalCall,
+          disableInternationalSMS: data.data.disableInternationalSMS,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateSettings = async (newSettings: Settings) => {
+    try {
+      const response = await fetch(
+        `https://account.eight.com.sg/api/v1/service/${profileData?.svcId}/settings`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${bearerToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...newSettings,
+            doNotCall: false,
+          }),
+        },
+      );
+      const data = await response.json();
+      if (data.code === 0) {
+        setSettings(newSettings);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   interface SettingsItemProps {
     icon: any;
@@ -40,6 +115,18 @@ export default function SettingsPage() {
     );
   };
 
+  const ToggleItem = ({ title, value, onValueChange }: any) => (
+    <View style={styles.toggleContainer}>
+      <Text style={styles.toggleText}>{title}</Text>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{ false: "#666", true: "#ff443c" }}
+        thumbColor="#fff"
+      />
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -61,37 +148,62 @@ export default function SettingsPage() {
           icon="person-outline"
           title="Account"
           description="Manage your account details"
-          onPress={() => {}}
-        />
-        <SettingsItem
-          icon="card-outline"
-          title="Billing"
-          description="View and manage your billing information"
-          onPress={() => {}}
-        />
-        <SettingsItem
-          icon="notifications-outline"
-          title="Notifications"
-          description="Customize your notification preferences"
-          onPress={() => {}}
-        />
-        <SettingsItem
-          icon="lock-closed-outline"
-          title="Privacy & Security"
-          description="Manage your privacy and security settings"
-          onPress={() => {}}
+          onPress={() => router.push("/profile")}
         />
         <SettingsItem
           icon="help-circle-outline"
           title="Help & Support"
           description="Get assistance and view FAQs"
           onPress={() => {
-            router.back(); // First go back
+            router.back();
             setTimeout(() => {
-              router.replace("/(tabs)/support"); // Then switch to support tab
+              router.replace("/(tabs)/support");
             }, 100);
           }}
         />
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Communication Preferences</Text>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#ff443c" />
+            </View>
+          ) : (
+            <View style={styles.toggleGroup}>
+              <ToggleItem
+                title="I would like to receive promotional messages and updates from eight"
+                value={settings.receivePromotionalMessages}
+                onValueChange={(value: boolean) =>
+                  updateSettings({
+                    ...settings,
+                    receivePromotionalMessages: value,
+                  })
+                }
+              />
+              <ToggleItem
+                title="I would like to block all overseas (international) calls"
+                value={settings.disableInternationalCall}
+                onValueChange={(value: boolean) =>
+                  updateSettings({
+                    ...settings,
+                    disableInternationalCall: value,
+                  })
+                }
+              />
+              <ToggleItem
+                title="I would like to block all overseas (international) SMS"
+                value={settings.disableInternationalSMS}
+                onValueChange={(value: boolean) =>
+                  updateSettings({
+                    ...settings,
+                    disableInternationalSMS: value,
+                  })
+                }
+              />
+            </View>
+          )}
+        </View>
+
         <View style={styles.bottomSpacing} />
       </ScrollView>
     </View>
@@ -160,7 +272,37 @@ const styles = StyleSheet.create({
     color: "#999",
     fontSize: 14,
   },
+  section: {
+    marginTop: 24,
+  },
+  sectionTitle: {
+    color: "#999",
+    fontSize: 16,
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
+  toggleGroup: {
+    backgroundColor: "#222",
+    borderRadius: 20,
+    padding: 16,
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  toggleText: {
+    color: "#fff",
+    fontSize: 14,
+    flex: 1,
+    marginRight: 16,
+  },
   bottomSpacing: {
     height: 100,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: "center",
   },
 });

@@ -4,12 +4,18 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 
 export default function Support() {
   const router = useRouter();
+
+  const openInAppBrowser = async (url: string) => {
+    await WebBrowser.openBrowserAsync(url);
+  };
 
   return (
     <View style={styles.container}>
@@ -26,7 +32,7 @@ export default function Support() {
 
         <TouchableOpacity
           style={styles.supportCard}
-          onPress={() => router.push("/faqs")}
+          onPress={() => openInAppBrowser("https://www.eight.com.sg/help")}
         >
           <View style={styles.cardContent}>
             <View style={styles.iconContainer}>
@@ -44,7 +50,7 @@ export default function Support() {
 
         <TouchableOpacity
           style={styles.supportCard}
-          onPress={() => router.push("/email-support")}
+          onPress={() => Linking.openURL("mailto:helpme@eight.com.sg")}
         >
           <View style={styles.cardContent}>
             <View style={styles.iconContainer}>
@@ -62,25 +68,9 @@ export default function Support() {
 
         <TouchableOpacity
           style={styles.supportCard}
-          onPress={() => router.push("/live-chat")}
-        >
-          <View style={styles.cardContent}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="chatbubbles-outline" size={24} color="#ff443c" />
-            </View>
-            <View style={styles.textContainer}>
-              <Text style={styles.cardTitle}>Live Chat</Text>
-              <Text style={styles.cardDescription}>
-                Chat with our support team in real-time
-              </Text>
-            </View>
-          </View>
-          <Ionicons name="chevron-forward" size={24} color="#666" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.supportCard}
-          onPress={() => router.push("/store-locator")}
+          onPress={() =>
+            openInAppBrowser("https://www.eight.com.sg/where-to-buy")
+          }
         >
           <View style={styles.cardContent}>
             <View style={styles.iconContainer}>
