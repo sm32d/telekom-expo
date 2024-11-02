@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import useUsageStore from "../store/usageStore";
 import { useServiceData } from "../hooks/useServiceData";
 import AnimatedUsageCard from "../components/AnimatedUsageCard";
 import {
@@ -18,24 +17,19 @@ import {
 export default function Home() {
   const { profileData, serviceDetails, loading, error, refetch } =
     useServiceData();
-  const { usageData, fetchUsageData } = useUsageStore();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refetch(), fetchUsageData()]);
+      await Promise.all([refetch()]);
     } catch (error) {
       console.error("Refresh failed:", error);
     } finally {
       setRefreshing(false);
     }
-  }, [refetch, fetchUsageData]);
-
-  useEffect(() => {
-    fetchUsageData();
-  }, []);
+  }, [refetch]);
 
   const renderUsageGrid = () => {
     if (loading) {

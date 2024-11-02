@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/authStore";
+import { router } from "expo-router";
 
 interface ServiceInclusion {
   inclusionType: string;
@@ -93,7 +94,12 @@ export const useServiceData = () => {
           },
         },
       );
+      const status = servicesResponse.status;
+      if (status === 401) {
+        router.replace("/login");
+      }
       const servicesData: ServicesResponse = await servicesResponse.json();
+      console.log("servicesdata", servicesData);
 
       if (servicesData.code !== 0 || !servicesData.data.length) {
         throw new Error("Failed to fetch services");

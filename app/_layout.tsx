@@ -13,12 +13,19 @@ export default function Layout() {
       router.replace("/login");
     }
   }, [isAuthenticated]);
+
   return (
     <SafeAreaProvider>
       <StatusBar style="light" />
       <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="profile" />
+          <Stack.Screen name="settings/index" />
+          <Stack.Screen name="more-options" />
+          <Stack.Screen name="notifications" />
+          <Stack.Screen name="+not-found" />
         </Stack>
       </SafeAreaView>
     </SafeAreaProvider>
