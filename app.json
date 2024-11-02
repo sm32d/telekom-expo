@@ -8,7 +8,8 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "uk.sume.telekom"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +23,9 @@
       "output": "static",
       "favicon": "./assets/images/8.png"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true
     },
