@@ -8,7 +8,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { useAuthStore } from "./store/authStore";
+import useAuthStore from "./store/authStore";
 
 interface AccountDetails {
   svcId: string;

@@ -1,7 +1,7 @@
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { useAuthStore } from "./store/authStore";
+import useAuthStore from "./store/authStore";
 import { useEffect } from "react";
 
 export default function Layout() {

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { authService } from "../services/authService";
+import authService from "../services/authService";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -12,7 +12,7 @@ interface AuthState {
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   bearerToken: null,
   refreshToken: null,
@@ -85,3 +85,5 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
   },
 }));
+
+export default useAuthStore;

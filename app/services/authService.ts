@@ -10,7 +10,7 @@ interface LoginResponse {
   };
 }
 
-export const authService = {
+const authService = {
   requestOTP: async (phoneNumber: string): Promise<LoginResponse> => {
     try {
       const response = await fetch(
@@ -79,3 +79,5 @@ export const authService = {
     }
   },
 };
+
+export default authService;

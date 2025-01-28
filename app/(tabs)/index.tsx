@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import { useServiceData } from "../hooks/useServiceData";
+import useServiceData from "../hooks/useServiceData";
 import AnimatedUsageCard from "../components/AnimatedUsageCard";
 import {
   ActivityIndicator,

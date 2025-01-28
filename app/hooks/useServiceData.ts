@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuthStore } from "../store/authStore";
+import useAuthStore from "../store/authStore";
 import { router } from "expo-router";
 
 interface ServiceInclusion {
@@ -71,7 +71,7 @@ interface ServicesResponse {
   data: ServiceListItem[];
 }
 
-export const useServiceData = () => {
+const useServiceData = () => {
   const { bearerToken } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -99,7 +99,6 @@ export const useServiceData = () => {
         router.replace("/login");
       }
       const servicesData: ServicesResponse = await servicesResponse.json();
-      console.log("servicesdata", servicesData);
 
       if (servicesData.code !== 0 || !servicesData.data.length) {
         throw new Error("Failed to fetch services");
@@ -147,3 +146,4 @@ export const useServiceData = () => {
     refetch: fetchData,
   };
 };
+ export default useServiceData;

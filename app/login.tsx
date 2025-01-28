@@ -12,7 +12,7 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useAuthStore } from "./store/authStore";
+import useAuthStore from "./store/authStore";
 
 export default function Login() {
   const router = useRouter();

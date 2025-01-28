@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useServiceData } from "./hooks/useServiceData";
+import useServiceData from "./hooks/useServiceData";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function MoreOptions() {
@@ -41,7 +41,7 @@ export default function MoreOptions() {
   const renderDetailItem = (label: string, value: string, icon: string) => (
     <View style={styles.detailItem}>
       <View style={styles.labelContainer}>
-        <Ionicons name={icon} size={20} color="#ff443c" style={styles.icon} />
+        <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color="#ff443c" style={styles.icon} />
         <Text style={styles.detailLabel}>{label}</Text>
       </View>
       <Text style={styles.detailValue}>{value}</Text>

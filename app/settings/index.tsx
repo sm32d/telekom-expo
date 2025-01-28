@@ -10,8 +10,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
-import { useAuthStore } from "../store/authStore";
-import { useServiceData } from "../hooks/useServiceData";
+import useAuthStore from "../store/authStore";
+import useServiceData from "../hooks/useServiceData";
 
 interface Settings {
   receivePromotionalMessages: boolean;
