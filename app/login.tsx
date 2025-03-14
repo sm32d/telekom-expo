@@ -39,7 +39,9 @@ export default function Login() {
     try {
       setIsLoading(true);
       await validateOTP(otp);
-      router.replace("/");
+      requestAnimationFrame(() => {
+        router.replace("/");
+      });
     } catch (error) {
       console.error(error);
       // Show error toast
