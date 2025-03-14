@@ -52,8 +52,9 @@ export default function Login() {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
+      keyboardVerticalOffset={0}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={styles.container}>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to continue</Text>
@@ -67,6 +68,8 @@ export default function Login() {
               value={phoneNumber}
               onChangeText={setPhoneNumber}
               editable={!showOtpInput}
+              returnKeyType="done"
+              onSubmitEditing={Keyboard.dismiss}
             />
 
             {showOtpInput && (
@@ -78,6 +81,8 @@ export default function Login() {
                 value={otp}
                 onChangeText={setOtp}
                 maxLength={6}
+                returnKeyType="done"
+                onSubmitEditing={Keyboard.dismiss}
               />
             )}
 
