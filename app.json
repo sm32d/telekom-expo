@@ -8,6 +8,11 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/8.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#222"
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "uk.sume.telekom"
@@ -15,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/8.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#222"
       },
       "package": "uk.sume.telekom"
     },
