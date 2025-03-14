@@ -8,7 +8,7 @@ export default function TabsLayout() {
     screenOptions={{
       headerShown: false,
       tabBarStyle: {
-        height: 80,
+        height: 90,
         backgroundColor: "#222",
         borderTopWidth: 0,
         position: "absolute",
@@ -16,7 +16,7 @@ export default function TabsLayout() {
         left: 16,
         right: 16,
         borderRadius: 30,
-        paddingVertical: 0,
+        paddingBottom: 16,
         marginHorizontal: 16,
       },
         tabBarIcon: ({ focused, color, size }) => null, // handle icons in tabBarLabel
@@ -38,11 +38,11 @@ export default function TabsLayout() {
 
           return (
             <View style={{ 
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: '50%',
+              flex: 1,
+              height: 74,
+              justifyContent: 'center',
               alignItems: "center",
+              marginBottom: 8,
              }}>
               <View
                 style={{
@@ -52,7 +52,7 @@ export default function TabsLayout() {
                   backgroundColor: focused ? "#ff443c" : "#333",
                   justifyContent: "center",
                   alignItems: "center",
-                  marginBottom: 2,
+                  marginBottom: 4,
                 }}
               >
                 <Ionicons
