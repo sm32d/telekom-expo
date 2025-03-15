@@ -18,7 +18,9 @@ export default function Login() {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isValidNumber, setIsValidNumber] = useState(true);
+  const [countdown, setCountdown] = useState(0);
   const [otp, setOtp] = useState("");
+  const [isValidOtp, setIsValidOtp] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showOtpInput, setShowOtpInput] = useState(false);
   const { requestOTP, validateOTP } = useAuthStore();
@@ -27,6 +29,16 @@ export default function Login() {
     const phoneRegex = /^[89]\d{7}$/;
     return phoneRegex.test(number);
   };
+
+  React.useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   const handleRequestOTP = async () => {
     if (!validatePhoneNumber(phoneNumber)) {
@@ -39,6 +51,7 @@ export default function Login() {
       await requestOTP(phoneNumber);
       setShowOtpInput(true);
       setIsValidNumber(true);
+      setCountdown(60);
     } catch (error) {
       console.error(error);
       // Show error toast
@@ -50,12 +63,14 @@ export default function Login() {
   const handleValidateOTP = async () => {
     try {
       setIsLoading(true);
+      setIsValidOtp(true);
       await validateOTP(otp);
       requestAnimationFrame(() => {
         router.replace("/");
       });
     } catch (error) {
-      console.error(error);
+      console.error('Invalid OTP', error);
+      setIsValidOtp(false);
       // Show error toast
     } finally {
       setIsLoading(false);
@@ -113,17 +128,38 @@ export default function Login() {
             </View>
 
             {showOtpInput && (
-              <TextInput
-                style={styles.input}
-                placeholder="Enter OTP"
-                placeholderTextColor="#666"
-                keyboardType="number-pad"
-                value={otp}
-                onChangeText={setOtp}
-                maxLength={6}
-                returnKeyType="done"
-                onSubmitEditing={Keyboard.dismiss}
-              />
+              <>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={[styles.input, !isValidOtp && styles.inputError]}
+                    placeholder="Enter OTP"
+                    placeholderTextColor="#666"
+                    keyboardType="number-pad"
+                    value={otp}
+                    onChangeText={(text) => {
+                      setOtp(text);
+                      if (!isValidOtp) setIsValidOtp(true);
+                    }}
+                    maxLength={6}
+                    returnKeyType="done"
+                    onSubmitEditing={Keyboard.dismiss}
+                  />
+                  {!isValidOtp && (
+                    <Text style={styles.errorText}>
+                      Invalid OTP. Please try again.
+                    </Text>
+                  )}
+                </View>
+                <TouchableOpacity
+                  style={[styles.resendButton, countdown > 0 && styles.resendButtonDisabled]}
+                  onPress={handleRequestOTP}
+                  disabled={countdown > 0}
+                >
+                  <Text style={[styles.resendText, countdown > 0 && styles.resendTextDisabled]}>
+                    {countdown > 0 ? `Resend OTP in ${countdown}s` : "Resend OTP"}
+                  </Text>
+                </TouchableOpacity>
+              </>
             )}
 
             <TouchableOpacity
@@ -213,5 +249,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     marginLeft: 4,
+  },
+  resendButton: {
+    alignSelf: 'flex-end',
+    marginTop: 8,
+  },
+  resendButtonDisabled: {
+    opacity: 0.6,
+  },
+  resendText: {
+    color: '#ff443c',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  resendTextDisabled: {
+    color: '#666',
   },
 });
