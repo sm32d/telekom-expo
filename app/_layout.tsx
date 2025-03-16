@@ -18,7 +18,7 @@ export default function Layout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="login" />
           <Stack.Screen name="profile" />

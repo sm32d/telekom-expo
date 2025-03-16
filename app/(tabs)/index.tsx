@@ -51,6 +51,18 @@ export default function Home() {
       );
     }
 
+    // Check if account has expired
+    const isExpired = new Date(serviceDetails.acctExpiry) < new Date();
+
+    if (isExpired) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>No Active Plan</Text>
+          <Text style={[styles.balanceTime, { marginTop: 2 }]}>Your plan expired on {new Date(serviceDetails.acctExpiry).toLocaleDateString("en-GB")}</Text>
+        </View>
+      );
+    }
+
     // Find domestic inclusions
     const domesticData = serviceDetails.currentPlan.inclusions.find(
       (inclusion) =>
@@ -196,14 +208,12 @@ export default function Home() {
                 ? Number(serviceDetails.mainBalance).toFixed(2)
                 : "0.00"}
             </Text>
-            <Text style={styles.balanceTime}>
-              Current plan expires on{" "}
-              {serviceDetails
-                ? new Date(serviceDetails.acctExpiry).toLocaleDateString(
-                    "en-GB",
-                  )
-                : "N/A"}
-            </Text>
+            {serviceDetails && new Date(serviceDetails.acctExpiry) > new Date() && (
+              <Text style={styles.balanceTime}>
+                Current plan expires on{" "}
+                {new Date(serviceDetails.acctExpiry).toLocaleDateString("en-GB")}
+              </Text>
+            )}
           </View>
           <View style={styles.actionButtons}>
             <TouchableOpacity
@@ -304,6 +314,7 @@ const styles = StyleSheet.create({
     color: "#999",
     fontSize: 14,
   },
+
   actionButtons: {
     flexDirection: "row",
     gap: 12,
