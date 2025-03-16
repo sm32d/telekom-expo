@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   usageCard: {
     width: "47%",
     backgroundColor: "#222",
-    borderRadius: 30,
+    borderRadius: 20,
     padding: 16,
     alignItems: "center",
     marginBottom: 8,

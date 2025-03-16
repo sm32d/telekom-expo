@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import authService from "../services/authService";
+import { router } from "expo-router";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -83,6 +84,8 @@ const useAuthStore = create<AuthState>((set, get) => ({
       refreshToken: null,
       phoneNumber: null,
     });
+    router.dismissAll();
+    router.replace("/login");
   },
 }));
 

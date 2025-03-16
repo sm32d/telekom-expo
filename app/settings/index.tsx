@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Switch,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -22,6 +23,7 @@ interface Settings {
 export default function SettingsPage() {
   const router = useRouter();
   const { bearerToken } = useAuthStore();
+  const { logout } = useAuthStore();
   const { profileData } = useServiceData();
   const [settings, setSettings] = useState<Settings>({
     receivePromotionalMessages: true,
@@ -29,6 +31,7 @@ export default function SettingsPage() {
     disableInternationalSMS: false,
   });
   const [loading, setLoading] = useState(true);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     if (profileData?.svcId) {
@@ -44,7 +47,7 @@ export default function SettingsPage() {
           headers: {
             Authorization: `Bearer ${bearerToken}`,
           },
-        },
+        }
       );
       const data = await response.json();
       if (data.code === 0) {
@@ -75,7 +78,7 @@ export default function SettingsPage() {
             ...newSettings,
             doNotCall: false,
           }),
-        },
+        }
       );
       const data = await response.json();
       if (data.code === 0) {
@@ -204,6 +207,47 @@ export default function SettingsPage() {
           )}
         </View>
 
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={() => setShowLogoutModal(true)}
+          >
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showLogoutModal}
+          onRequestClose={() => setShowLogoutModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Confirm Logout</Text>
+              <Text style={styles.modalText}>
+                Are you sure you want to log out of your account?
+              </Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalCancelButton}
+                  onPress={() => setShowLogoutModal(false)}
+                >
+                  <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.modalLogoutButton}
+                  onPress={() => {
+                    logout();
+                  }}
+                >
+                  <Text style={styles.modalLogoutButtonText}>Logout</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
         <View style={styles.bottomSpacing} />
       </ScrollView>
     </View>
@@ -211,6 +255,62 @@ export default function SettingsPage() {
 }
 
 const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#222",
+    borderRadius: 20,
+    padding: 24,
+    width: "85%",
+    alignItems: "center",
+  },
+  modalTitle: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+  modalText: {
+    color: "#999",
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalCancelButton: {
+    flex: 1,
+    backgroundColor: "#333",
+    padding: 16,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  modalLogoutButton: {
+    flex: 1,
+    backgroundColor: "#ff443c",
+    padding: 16,
+    borderRadius: 20,
+    marginLeft: 8,
+  },
+  modalCancelButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  modalLogoutButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
   container: {
     flex: 1,
     backgroundColor: "#121212",
@@ -304,5 +404,17 @@ const styles = StyleSheet.create({
   loadingContainer: {
     padding: 20,
     alignItems: "center",
+  },
+  logoutButton: {
+    backgroundColor: "#ff443c",
+    padding: 16,
+    borderRadius: 20,
+    alignItems: "center",
+    marginHorizontal: 8,
+  },
+  logoutText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

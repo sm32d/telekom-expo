@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: 20,
   },
   statusText: {
     color: "#fff",
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   filterOption: {
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 20,
     marginBottom: 8,
   },
   selectedFilter: {
