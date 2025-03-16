@@ -96,7 +96,13 @@ const useServiceData = () => {
       );
       const status = servicesResponse.status;
       if (status === 401) {
-        router.replace("/login");
+        try {
+          await useAuthStore.getState().refreshAuthToken();
+          return await fetchData(); // Retry after token refresh
+        } catch (error) {
+          router.replace("/login");
+          return;
+        }
       }
       const servicesData: ServicesResponse = await servicesResponse.json();
 
