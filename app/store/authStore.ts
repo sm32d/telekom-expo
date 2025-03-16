@@ -62,6 +62,15 @@ const useAuthStore = create<AuthState>((set, get) => ({
   refreshAuthToken: async () => {
     const { refreshToken, bearerToken } = get();
     if (!refreshToken || !bearerToken) {
+      const storedAuth = await storageService.getStoredAuth();
+      if (storedAuth.refreshToken && storedAuth.bearerToken) {
+        set({
+          bearerToken: storedAuth.bearerToken,
+          refreshToken: storedAuth.refreshToken,
+          phoneNumber: storedAuth.phoneNumber
+        });
+        return get().refreshAuthToken();
+      }
       throw new Error("No refresh token available");
     }
 
@@ -76,20 +85,31 @@ const useAuthStore = create<AuthState>((set, get) => ({
         set(authData);
         await storageService.storeAuth(authData);
 
-        const refreshDelay = (response.data.expires - 30) * 1000;
+        const refreshDelay = Math.max((response.data.expires - 30) * 1000, 1000);
         // Set up next token refresh
         setTimeout(
           () => {
-            get().refreshAuthToken();
+            get().refreshAuthToken().catch((error) => {
+              console.error('Token refresh failed:', error);
+              // Only logout if the error is not network-related
+              if (!(error instanceof TypeError)) {
+                get().logout();
+              }
+            });
           },
           refreshDelay
         );
       } else {
-        // If refresh fails, log out
+        // If refresh fails with invalid token, log out
         get().logout();
       }
     } catch (error) {
-      get().logout();
+      if (error instanceof TypeError) {
+        // Network error, retry after delay
+        setTimeout(() => get().refreshAuthToken(), 5000);
+      } else {
+        get().logout();
+      }
     }
   },
 
