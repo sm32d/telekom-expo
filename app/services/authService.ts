@@ -73,7 +73,10 @@ const authService = {
           }),
         },
       );
-      return await response.json();
+
+      const responseData = await response.json();
+
+      return responseData;
     } catch (error) {
       throw new Error("Failed to refresh token");
     }

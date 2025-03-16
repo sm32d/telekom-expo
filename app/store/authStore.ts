@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import authService from "../services/authService";
+import storageService from "../services/storageService";
 import { router } from "expo-router";
 
 interface AuthState {
@@ -23,6 +24,7 @@ const useAuthStore = create<AuthState>((set, get) => ({
     const response = await authService.requestOTP(phoneNumber);
     if (response.code === 0) {
       set({ phoneNumber });
+      await storageService.storeAuth({ bearerToken: null, refreshToken: null, phoneNumber });
     } else {
       throw new Error(response.message);
     }
@@ -34,11 +36,16 @@ const useAuthStore = create<AuthState>((set, get) => ({
 
     const response = await authService.validateOTP(phoneNumber, otp);
     if (response.code === 0 && response.data) {
-      set({
-        isAuthenticated: true,
+      const authData = {
         bearerToken: response.data.token,
         refreshToken: response.data.refreshToken,
+        phoneNumber
+      };
+      set({
+        isAuthenticated: true,
+        ...authData
       });
+      await storageService.storeAuth(authData);
 
       // Set up token refresh timer
       setTimeout(
@@ -54,36 +61,46 @@ const useAuthStore = create<AuthState>((set, get) => ({
 
   refreshAuthToken: async () => {
     const { refreshToken, bearerToken } = get();
-    if (!refreshToken || !bearerToken)
+    if (!refreshToken || !bearerToken) {
       throw new Error("No refresh token available");
+    }
 
-    const response = await authService.refreshToken(refreshToken, bearerToken);
-    if (response.code === 0 && response.data) {
-      set({
-        bearerToken: response.data.token,
-        refreshToken: response.data.refreshToken,
-      });
+    try {
+      const response = await authService.refreshToken(refreshToken, bearerToken);
+      if (response.code === 0 && response.data) {
+        const authData = {
+          bearerToken: response.data.token,
+          refreshToken: response.data.refreshToken,
+          phoneNumber: get().phoneNumber
+        };
+        set(authData);
+        await storageService.storeAuth(authData);
 
-      // Set up next token refresh
-      setTimeout(
-        () => {
-          get().refreshAuthToken();
-        },
-        (response.data.expires - 30) * 1000,
-      );
-    } else {
-      // If refresh fails, log out
+        const refreshDelay = (response.data.expires - 30) * 1000;
+        // Set up next token refresh
+        setTimeout(
+          () => {
+            get().refreshAuthToken();
+          },
+          refreshDelay
+        );
+      } else {
+        // If refresh fails, log out
+        get().logout();
+      }
+    } catch (error) {
       get().logout();
     }
   },
 
-  logout: () => {
+  logout: async () => {
     set({
       isAuthenticated: false,
       bearerToken: null,
       refreshToken: null,
       phoneNumber: null,
     });
+    await storageService.clearAuth();
     router.dismissAll();
     router.replace("/login");
   },

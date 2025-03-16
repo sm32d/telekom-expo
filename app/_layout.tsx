@@ -2,17 +2,48 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import useAuthStore from "./store/authStore";
-import { useEffect } from "react";
+import storageService from "./services/storageService";
+import { useEffect, useState } from "react";
 
 export default function Layout() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    const initAuth = async () => {
+      const storedAuth = await storageService.getStoredAuth();
+      if (storedAuth.bearerToken && storedAuth.refreshToken) {
+        useAuthStore.setState({
+          isAuthenticated: true,
+          ...storedAuth
+        });
+        // Refresh token using authStore
+        try {
+          await useAuthStore.getState().refreshAuthToken();
+          setIsInitializing(false);
+        } catch (error) {
+          useAuthStore.setState({ isAuthenticated: false });
+          setIsInitializing(false);
+          router.replace('/login');
+        }
+      } else if (!isAuthenticated) {
+        setIsInitializing(false);
+        router.replace('/login');
+      }
+    };
+    initAuth();
+  }, []);
+
+  useEffect(() => {
+    if (!isInitializing && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isInitializing]);
+
+  if (isInitializing) {
+    return null;
+  }
 
   return (
     <SafeAreaProvider>
