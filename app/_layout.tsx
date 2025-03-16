@@ -27,19 +27,15 @@ export default function Layout() {
           setIsInitializing(false);
           router.replace('/login');
         }
-      } else if (!isAuthenticated) {
+      } else {
         setIsInitializing(false);
-        router.replace('/login');
+        if (!isAuthenticated) {
+          router.replace('/login');
+        }
       }
     };
     initAuth();
   }, []);
-
-  useEffect(() => {
-    if (!isInitializing && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [isAuthenticated, isInitializing]);
 
   if (isInitializing) {
     return null;
