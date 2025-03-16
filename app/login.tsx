@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,9 +10,13 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Switch,
+  Modal,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import useAuthStore from "./store/authStore";
+import profileService from "./services/profileService";
 
 export default function Login() {
   const router = useRouter();
@@ -23,6 +27,10 @@ export default function Login() {
   const [isValidOtp, setIsValidOtp] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showOtpInput, setShowOtpInput] = useState(false);
+  const [profiles, setProfiles] = useState<{ phoneNumber: string; label?: string }[]>([]);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [profileToDelete, setProfileToDelete] = useState<string | null>(null);
+  const [saveProfile, setSaveProfile] = useState(false);
   const { requestOTP, validateOTP } = useAuthStore();
 
   const validatePhoneNumber = (number: string) => {
@@ -30,7 +38,21 @@ export default function Login() {
     return phoneRegex.test(number);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
+    const loadProfiles = async () => {
+      const savedProfiles = await profileService.getProfiles();
+      setProfiles(savedProfiles.sort((a, b) => b.lastUsed - a.lastUsed));
+    };
+    loadProfiles();
+  }, []);
+
+  useEffect(() => {
+    if (phoneNumber && validatePhoneNumber(phoneNumber)) {
+      handleRequestOTP();
+    }
+  }, [phoneNumber]);
+
+  useEffect(() => {
     let timer: NodeJS.Timeout;
     if (countdown > 0) {
       timer = setInterval(() => {
@@ -48,9 +70,15 @@ export default function Login() {
 
     try {
       setIsLoading(true);
-      await requestOTP(phoneNumber);
-      setShowOtpInput(true);
       setIsValidNumber(true);
+      
+      if (saveProfile) {
+        await profileService.addProfile(phoneNumber);
+      }
+      await profileService.updateLastUsed(phoneNumber);
+      await requestOTP(phoneNumber);
+      
+      setShowOtpInput(true);
       setCountdown(60);
     } catch (error) {
       console.error(error);
@@ -96,6 +124,38 @@ export default function Login() {
           <Text style={styles.subtitle}>Sign in to continue</Text>
 
           <View style={styles.form}>
+            {profiles.length > 0 && !showOtpInput && (
+              <View style={styles.profilesContainer}>
+                {profiles.map((profile) => (
+                  <TouchableOpacity
+                    key={profile.phoneNumber}
+                    style={styles.profileCard}
+                    onPress={() => {
+                      setPhoneNumber(profile.phoneNumber);
+                      setIsValidNumber(true);
+                      // handleRequestOTP will be triggered by useEffect
+                    }}
+                  >
+                    <View style={styles.profileCardContent}>
+                      <View>
+                        <Text style={styles.profileCardNumber}>{profile.phoneNumber}</Text>
+                        <Text style={styles.profileCardLabel}>{profile.label || 'Tap to login'}</Text>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.profileDeleteButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          setProfileToDelete(profile.phoneNumber);
+                          setDeleteModalVisible(true);
+                        }}
+                      >
+                        <Ionicons name="trash-outline" size={20} color="#ff443c" />
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
             <View style={styles.inputContainer}>
               <TextInput
                 style={[
@@ -116,6 +176,17 @@ export default function Login() {
                 <Text style={styles.errorText}>
                   Please enter a valid 8-digit number starting with 8 or 9
                 </Text>
+              )}
+              {!showOtpInput && (
+                <View style={styles.saveProfileContainer}>
+                  <Text style={styles.saveProfileText}>Save this number for future use</Text>
+                  <Switch
+                    value={saveProfile}
+                    onValueChange={setSaveProfile}
+                    trackColor={{ false: '#333', true: '#ff443c' }}
+                    thumbColor={saveProfile ? '#fff' : '#666'}
+                  />
+                </View>
               )}
               {showOtpInput && (
                 <TouchableOpacity
@@ -176,6 +247,48 @@ export default function Login() {
               )}
             </TouchableOpacity>
           </View>
+
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={deleteModalVisible}
+            onRequestClose={() => setDeleteModalVisible(false)}
+          >
+            <TouchableWithoutFeedback onPress={() => setDeleteModalVisible(false)}>
+              <View style={styles.modalOverlay}>
+                <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
+                  <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>Delete Profile</Text>
+                    <Text style={styles.modalText}>
+                      Are you sure you want to delete this profile? This action cannot be undone.
+                    </Text>
+                    <View style={styles.modalButtons}>
+                      <TouchableOpacity
+                        style={[styles.modalButton, styles.cancelButton]}
+                        onPress={() => setDeleteModalVisible(false)}
+                      >
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.modalButton, styles.deleteButton]}
+                        onPress={async () => {
+                          if (profileToDelete) {
+                            await profileService.deleteProfile(profileToDelete);
+                            const updatedProfiles = await profileService.getProfiles();
+                            setProfiles(updatedProfiles);
+                          }
+                          setDeleteModalVisible(false);
+                          setProfileToDelete(null);
+                        }}
+                      >
+                        <Text style={styles.deleteButtonText}>Delete</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </TouchableWithoutFeedback>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -183,6 +296,91 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#121212',
+    borderRadius: 12,
+    padding: 24,
+    width: '85%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  modalText: {
+    color: '#999',
+    fontSize: 16,
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  modalButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#222',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  deleteButton: {
+    backgroundColor: '#ff443c',
+  },
+  cancelButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  profilesContainer: {
+    marginBottom: 16,
+    gap: 8,
+  },
+  profileCard: {
+    backgroundColor: '#222',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  profileCardContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  profileDeleteButton: {
+    padding: 8,
+  },
+  profileCardNumber: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  profileCardLabel: {
+    color: '#666',
+    fontSize: 14,
+  },
   container: {
     flex: 1,
     backgroundColor: "#121212",
@@ -264,5 +462,15 @@ const styles = StyleSheet.create({
   },
   resendTextDisabled: {
     color: '#666',
+  },
+  saveProfileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  saveProfileText: {
+    color: '#999',
+    fontSize: 14,
   },
 });
