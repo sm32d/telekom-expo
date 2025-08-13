@@ -1,5 +1,7 @@
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useColorScheme } from 'react-native';
+import { setBackgroundColorAsync } from 'expo-navigation-bar';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import useAuthStore from "./store/authStore";
 import storageService from "./services/storageService";
@@ -9,6 +11,12 @@ export default function Layout() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const [isInitializing, setIsInitializing] = useState(true);
+  const colorScheme = useColorScheme();
+
+  useEffect(() => {
+    const backgroundColor = '#121212'
+    setBackgroundColorAsync(backgroundColor);
+  }, [colorScheme]);
 
   useEffect(() => {
     const initAuth = async () => {
