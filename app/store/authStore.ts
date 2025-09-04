@@ -41,11 +41,12 @@ const useAuthStore = create<AuthState>((set, get) => ({
         refreshToken: response.data.refreshToken,
         phoneNumber
       };
+      await storageService.storeAuth(authData);
+      await new Promise(resolve => setTimeout(resolve, 100));
       set({
         isAuthenticated: true,
         ...authData
       });
-      await storageService.storeAuth(authData);
 
       // Set up token refresh timer
       setTimeout(

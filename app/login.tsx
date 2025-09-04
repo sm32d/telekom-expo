@@ -93,9 +93,8 @@ export default function Login() {
       setIsLoading(true);
       setIsValidOtp(true);
       await validateOTP(otp);
-      requestAnimationFrame(() => {
-        router.replace("/");
-      });
+      await new Promise(resolve => setTimeout(resolve, 100));
+      router.replace("/");
     } catch (error) {
       console.error('Invalid OTP', error);
       setIsValidOtp(false);

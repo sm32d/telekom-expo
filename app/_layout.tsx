@@ -20,33 +20,37 @@ export default function Layout() {
 
   useEffect(() => {
     const initAuth = async () => {
-      const storedAuth = await storageService.getStoredAuth();
-      if (storedAuth.bearerToken && storedAuth.refreshToken) {
-        useAuthStore.setState({
-          isAuthenticated: true,
-          ...storedAuth
-        });
-        // Refresh token using authStore
-        try {
+      try {
+        const storedAuth = await storageService.getStoredAuth();
+        if (storedAuth.bearerToken && storedAuth.refreshToken) {
+          useAuthStore.setState({
+            isAuthenticated: true,
+            ...storedAuth
+          });
           await useAuthStore.getState().refreshAuthToken();
-          setIsInitializing(false);
-        } catch (error) {
+        } else {
           useAuthStore.setState({ isAuthenticated: false });
-          setIsInitializing(false);
+          await new Promise(resolve => setTimeout(resolve, 100));
           router.replace('/login');
         }
-      } else {
+      } catch (error) {
+        useAuthStore.setState({ isAuthenticated: false });
+        await new Promise(resolve => setTimeout(resolve, 100));
+        router.replace('/login');
+      } finally {
         setIsInitializing(false);
-        if (!isAuthenticated) {
-          router.replace('/login');
-        }
       }
     };
     initAuth();
   }, []);
 
   if (isInitializing) {
-    return null;
+    return (
+      <SafeAreaProvider>
+        <StatusBar style="light" />
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }} />
+      </SafeAreaProvider>
+    );
   }
 
   return (

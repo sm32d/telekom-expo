@@ -139,9 +139,16 @@ const useServiceData = () => {
   };
 
   useEffect(() => {
-    if (bearerToken) {
-      fetchData();
-    }
+    const init = async () => {
+      if (!bearerToken) {
+        setTimeout(() => {
+          router.replace('/login');
+        }, 100);
+        return;
+      }
+      await fetchData();
+    };
+    init();
   }, [bearerToken]);
 
   return {
