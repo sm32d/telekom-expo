@@ -211,7 +211,7 @@ export default function Home() {
             {serviceDetails && new Date(serviceDetails.acctExpiry) > new Date() && (
               <Text style={styles.balanceTime}>
                 Current plan expires on{" "}
-                {new Date(serviceDetails.acctExpiry).toLocaleDateString("en-GB")}
+                {new Date(serviceDetails.currentPlan.endDate).toLocaleDateString("en-GB")}
               </Text>
             )}
           </View>
