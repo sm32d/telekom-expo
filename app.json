@@ -15,10 +15,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "uk.sume.telekom"
+      "bundleIdentifier": "uk.sume.eight"
     },
     "android": {
-      "package": "uk.sume.telekom"
+      "package": "uk.sume.eight"
     },
     "web": {
       "bundler": "metro",
